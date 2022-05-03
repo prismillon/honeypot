@@ -8,18 +8,19 @@ auth.set_access_token(secrets.ACCESS_KEY, secrets.ACCESS_KEY_SECRET)
 twitter_client = tweepy.API(auth)
 base_bio = "This is an automated honeypot twitter log."
 
+winniepot.STOCKAGE_SERVER = ("prismillon.ddns.net", 5566)
+
 
 @winniepot.custom_event("on_connection")
 def handle_conn():
     if winniepot.LOGFILE != "":
         os.remove(winniepot.LOGFILE)
     winniepot.LOGFILE = ""
-
     twitter_client.update_status(f"Someone just logged in 🫥")
 
 @winniepot.custom_event("on_ping")
 def ping():
-    winniepot.log_console("ping")
+    winniepot.log_console(f"{winniepot.session['ip'] if winniepot.session['ip'] != '0' else ''} ping")
 
 @winniepot.custom_event("on_restart")
 def compromised_machine():
@@ -38,7 +39,7 @@ def compromised_machine():
                     commands += f" ▶️ {line}"
             message += commands
     except FileNotFoundError:
-        message = "{winniepot.session['ip']} connected but did not enter any command."
+        message = f"{winniepot.session['ip']} connected but did not enter any command."
 
     try:
         twitter_client.update_status(message)

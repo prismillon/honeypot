@@ -349,15 +349,12 @@ Grâce à cette possibilité de customisation, il est facile d'imaginer une int�
 ## **4 - RESULTATS**
 
 ### 4.1 Présentation de notre implémenation.
-Pour démontrer la modularité et la capacité d'adaptation de notre honeypot, nous avons crée notre propre implémentation.
+Pour démontrer la modularité et la capacité d'adaptation de notre honeypot, nous avons crée notre propre [implémentation](./demo/main.py). Ainsi, un bot twitter a été ajouté à la gestion du honeypot, avec un tweet à chaque fin d'attaque proposant un résumé de l'attaque ainsi qu'une description se modifiant automatiquement pour signaler si le honeypot est sous attaque ou non.
+
+![Profile](./images/twitterprofil.png)
+![Tweet](./images/twitterAttack.png)
 
 ### 4.2 Résultats obtenu
-Suite à la mise en ligne de notre honeypot nous avons pu capturer les interactions suivantes :
-  - Plusieurs tentatives de minage de bit coin
-  - Une connexion ayant mené à une action concrète de l'attaquant dont les logs sont visible sur notre compte twitter automatisé [@Winnie-Honeypot](https://twitter.com/honeypot_winnie)
-  - Des connexions ne menant à aucune action concrète
-
-  ![WinnieTwiter](./images/twitterWinnie.png)
-
+Durant une exposition sur internet d'environ une semaine sans interruption, plusieurs comportements on été detectés,
 <a id="conclusion"></a>
   ## **5. Conclusion**
