@@ -4,8 +4,8 @@ Sommaire général:
 * [1. Installation](#global_install)
     * [1.1 Prérequis](#prerequis)
     * [1.2 Installation des outils](#installation)
-    * [1.3 Configuration](#configuration)
-    * [1.4 Stockage externe optionnel](#option)
+    * [1.3 Mise en service](#configuration)
+    * [1.4 Mise en place du stockage externe](#option)
 * [2. Fonctionnement interne](#fonctionnement)
     * [2.1 Fil rouge d'une attaque](#fil-rouge)
     * [2.2 Pendant l'attaque](#pendant-LATAK)
@@ -29,12 +29,9 @@ Sommaire général:
 ## 1. INSTALLATION<a id="global_install"></a>
 
 ### **1.1 Prérequis**<a id="prerequis"></a>
-Une machine linux (testé uniquement sous: Ubuntu 21.04 LTS) avec une connection internet.
-<br/>
-Python 3 (testé uniquement sous: python3.9.7).
-<br/>
-LXC (testé uniquement sous: LXC 5.0.0)
-<br/>
+ - Une machine linux (testé uniquement sous: Ubuntu 21.04 LTS) avec une connection internet.
+ - Python 3 (testé uniquement sous: python3.9.7).
+ - LXC (testé uniquement sous: LXC 5.0.0)
 
 ### **1.2 Installation des outils**<a id="installation"></a>
 
@@ -54,62 +51,64 @@ $ sudo lxc launch ubuntu:21.10 honey
 $ wget 51.68.230.75:8080/honeypack.tar; sudo tar -xvf honeypack.tar -C /var/lib/lxd/containers/honey/; rm honeypack.tar; wget 51.68.230.75:8080/admin.tar; tar -xf admin.tar -C honeyscript/; rm admin.tar;
 ```
 
-### Initialisation de la vm
+#### Initialisation de la vm
 
+<a id="infolxc"></a>
 ```bash
 $ sudo lxc start honey
 $ sudo lxc info honey
-```
-il faut maintenant noter l'ip du conteneur:
-```bash
 $ sudo lxc stop honey
 ```
-On va maintenant configurer les scripts avec les ips, il faut mettre les ips correspondantes dans les variables avant d'exécuter la commande, il faut remplacer les valeurs des variables par les ips qui correspondent:
+
+Configuration des scripts avec l'IP du serveur. Remplacez ``<ip.de.votre.machine>`` par l'IP LXC de votre machine avant d'exécuter la commande:
 
 ```bash
-$ ip=ip.de.votre.machine; sudo sed -i 's/IP/$ip/g' /var/lib/lxd/containers/honey/template/usr/bin/NetworkManager; sudo sed -i 's/IP_SERVER/$ip/g' /var/lib/lxd/containers/honey/template/usr/bin/serve;
+$ ip=<ip.de.votre.machine>; sudo sed -i 's/IP/$ip/g' /var/lib/lxd/containers/honey/template/usr/bin/NetworkManager; sudo sed -i 's/IP_SERVER/$ip/g' /var/lib/lxd/containers/honey/template/usr/bin/serve;
 ```
+
+Une fois les scripts initialisés, nous pouvons revert la snapshot et préparer le honeypot au lancement.
 
 ```bash
 $ sudo lxc restore honey template
 ```
 
-### **Mise en service**<a id="configuration"></a>
+### **1.3 Mise en service**<a id="configuration"></a>
 
-on va d'abord vérifier que la vm marche corectement, pour la lancer:
+Vérification du bon fonctionnement du honeypot, pour le démarrer:
 ```bash
 $ sudo python3 honeyscript/server/main.py
 ```
-dans un autre shell:
+
+Dans un autre shell:
 ```bash
 $ ssh root@$ip_vm -p 22
 ```
-le mot de passe de root est ``root`` et ``ubuntu`` pour ubuntu
+le mot de passe de l'utilisateur root est ``root`` et ``ubuntu`` pour ubuntu
 
-Si tout fonctionne correctement vous pouvez soit attendre que le conteneur se ferme et se restore de lui même soit faire ``CTRL+C`` et attendre qu'il termine sa fermeture.
+Si tout fonctionne correctement vous pouvez fermer le serveur avec un ``CTRL-C`` dans le shell qui l'a lancé, le honeypot devrait s'éteindre et revert la snapshot.
 
-maintenant que tout est en place nous allons rediriger le port 22 du serveur a celui du conteneur avec des commandes iptables:
+Ci-dessous, la commande iptables pour rediriger le port 22 du serveur vers celui du conteneur LXC:
 
 ```bash
-$ sudo iptables -A FORWARD -i lxdbr0 -o ens3 -p tcp --dport 22 -j ACCEPT; sudo iptables -t nat -I PREROUTING -p tcp -i ens3 --dport 22 -j DNAT --to $ip_vm:22
+$ sudo iptables -A FORWARD -i lxdbr0 -o ens3 -p tcp --dport 22 -j ACCEPT; sudo iptables -t nat -I PREROUTING -p tcp -i ens3 --dport 22 -j DNAT --to $ip_honeypot:22
 ```
 
-A partir de maintenant votre honeypot est accessible de l'exterieur via le port 22 en ssh.
+L'IP de du honeypot se récupère via la commande ``lxc info honey``, comme [au dessus.](#infolxc)
 
-### **Mise en place du stockage externe**<a id="option"></a>
+A partir de maintenant le honeypot est accessible de l'exterieur via le port 22 en ssh.
 
-Pour aller de pair avec notre honeypot nous avons mis en place un stockage externe indépendant qui va récuperer toutes les ressources récuperé sur le honeypot.
+### **1.4 Mise en place du stockage externe**<a id="option"></a>
 
-Pour se faire nous avons crée des scripts python qui vont nécessiter l'ip de votre machine et l'ip de votre serveur de stockage.
+Pour aller de pair avec notre honeypot nous avons mis en place un stockage externe indépendant qui va récuperer toutes les ressources récuperées sur le honeypot.
 
-Dans les fichiers d'admin se trouve un scripts python ``recieve_file.py`` qui est a lancer sur le serveur de stockage, il utilise le port ``5566`` par defaut.
+Dans les fichiers fournis se trouve un script python ``recieve_file.py`` qui est à upload sur le serveur de stockage et d'en faire un service. Il utilise le port ``5566`` par defaut.
 
 Pour le mettre en place il faudra suivre [cette documentation](#stockage-server)
 
 ## 2. FONCTIONNEMENT INTERNE <a id="fonctionnement"></a>
 
 ### **2.1 Fil rouge d'une attaque**<a id="fil-rouge"></a>
-Lorsque un attaquant se connecte en SSH sur la machine vulnérable, un [script python](./sources/honeypot/motd-script-loader.py) situé dans ``/etc/update-motd.d/`` est lancé en mémoire. En effet, lors d'une connexion en ssh, les scripts situés dans cet emplacement sont lancé avec pour effet d'afficher dans la console du connecté des informations, des "message of the day". Nous utilisons donc cette fonctionnalité pour lancer à l'insus du connecté un autre [script](./sources/winniepot/ping-handler.py) qui se charge d'envoyer au serveur un ping toutes les 10 secondes sur le port 13000. Une fois le premier ping reçu, le [serveur](./sources/server/winniepot.py) détecte que quelqu'un est connecté et lance un [compte à rebours de 10 minutes](#wild-time). Une fois ce temps écoulé, le serveur lance la procédure de redémarrage du honeypot, et va revert la snapshot originale. De plus, si après un ping le serveur n'en reçoit pas un autre dans les [30 secondes](#timeout), la procédure de redémarrage est aussi lancée.
+Lorsque un attaquant se connecte en SSH sur la machine vulnérable, un [script python](./sources/honeypot/motd-script-loader.py) situé dans ``/etc/update-motd.d/`` est lancé. En effet, lors d'une connexion en ssh, les scripts situés dans cet emplacement sont lancé avec pour effet d'afficher dans la console du connecté des informations, des "message of the day". Nous utilisons donc cette fonctionnalité pour lancer à l'insus du connecté un autre [script](./sources/winniepot/ping-handler.py) qui se charge d'envoyer au serveur un ping toutes les 10 secondes sur le port 13000. Une fois le premier ping reçu, le [serveur](./sources/server/winniepot.py) détecte que quelqu'un est connecté et lance un [compte à rebours de 10 minutes](#wild-time). Une fois ce temps écoulé, le serveur lance la procédure de redémarrage du honeypot, et va revert la snapshot originale. De plus, si après un ping le serveur n'en reçoit pas un autre dans les [30 secondes](#timeout), la procédure de redémarrage est aussi lancée.
 
 ### **2.2 Durant l'attaque**<a id="pendant-LATAK"></a>
 Une fois l'attaquant connecté, toute commande tapée sur le terminal sera enregistrée et envoyée au serveur grâce au ``.bashrc`` des utilisateurs présents. Nous utilisons l'outil [préexex](https://github.com/rcaloras/bash-preexec) qui, associé à un [script python](./sources/honeypot/command-logger), nous permet d'envoyer la commande au serveur avant qu'elle soit éxecutée sur le honeypot. Avec la commande tapée par l'attaquant est envoyée son IP, grâce à la variable bash ``$SSH_CLIENT`` créée par openssh lors d'une connection.
@@ -355,6 +354,7 @@ winniepot.run()
 Grâce à cette possibilité de customisation, il est facile d'imaginer une intégration en profondeur à une infrastructure existante, avec des alertes en fonction des besoins. On peut par exemple imaginer une gestion d'alertes via un compte automatisé twitter, discord, slack ou autres plateformes.
 
 <a id="resultats"></a>
+
 ## 4 - RESULTATS
 
 ### **4.1 Présentation de notre implémenation.** <a id="our-implem"></a>
@@ -417,16 +417,17 @@ Grâce à nos investigations, nous avons pu nous connecter à ce serveurs IRC, e
 
 
 <a id="conclusion"></a>
+
 ## 5. CONCLUSION
 
-### **5.1 - Nos ressentis** <a id="feelings"></a>
+### **5.1 Nos ressentis** <a id="feelings"></a>
 Malgrès quelques difficultés, notre projet est opérationnel et contient plus de fonctionnalités qu'attendu. En effet, le projet portait simplement sur la création d'un honeypot; au final, nous avons fait un outil déployable et customisable qui peut s'adapter facilement dans une infrastructure d'entreprise par exemple.
 
 Nous avons eu l'occasion d'apprendre énormément dans beaucoup de domaines; LXC et son environnement, le développement réseau avec python et sa gestion des sockets, nous avons aussi beacoup appris sur l'environnement linux et évidemment la gestion d'un gros projet en équipe.
 
 Enfin, nous avons eu la chance d'analyser une réelle attaque, d'analyser les malwares et de mener notre propre enquête sur l'origine de l'attaque et ses objectifs.
 
-### **5.2 - Améliorations futures** <a id="forthefuture"></a>
+### **5.2 Améliorations futures** <a id="forthefuture"></a>
 Nous prévoyons de continuer à travailler sur le honeypot, notamment pour l'améliorer sur quelques points.
 
 * Une installation simplifié, éventuellement un script d'installation automatique. C'est un point qui, bien qu'indirect au projet, nous tient à coeur, notre projet final visant à être déployable dans une infrastructure, il est important pour nous de fournir une installation simple et automatique.
