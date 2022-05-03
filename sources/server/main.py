@@ -1,0 +1,3 @@
+import winniepot
+
+winniepot.run()
