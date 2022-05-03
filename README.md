@@ -393,7 +393,7 @@ Après avoir mené une analyse, ``w.sh`` et ``c.sh`` sont des scripts detéctant
 
 Enfin, ``botnet.sh`` ne semble pas être un malware connu, et après l'avoir analysé, nous sommes en capacité d'affirmer que c'est une backdoor implémentée en [IRC](https://en.wikipedia.org/wiki/Internet_Relay_Chat), un compte IRC automatisé qui attend de recevoir un message privé, vérifie que le message privé contient une certaine clé et exécute la commande passé par message si la clé est correcte.
 
-Nous avons aussi récupéré la liste des serveurs IRC sur lequels le bot/backdoor se connecte, la voici:
+Nous avons aussi récupéré la liste des liens vers un serveur IRC sur lequel le bot/backdoor se connecte, la voici:
 
 ```
 ix1.undernet.org # biret
@@ -404,12 +404,25 @@ Budapest.HU.EU.UnderNet.org # biret
 Chicago.IL.US.Undernet.org # biret
 ```
 
-Grâce à nos investigations, nous avons pu nous connecter à ces serveurs IRC, et en effet, on remarque que des bots sont bien présents !
+Grâce à nos investigations, nous avons pu nous connecter à ce serveurs IRC, et en effet, on remarque que des bots sont bien présents !
 
 ![](./images/IRCbot.png)
 
-``/!\ Disclaimer:`` (Y'a des trucs chelou et probablement des trucs pas légaux sur le serveur IRC, be aware.)
+``/!\ Disclaimer:`` (Y'a des trucs chelou et probablement pas très légaux sur le serveur IRC, be aware.)
 
 
 <a id="conclusion"></a>
 ## 5. CONCLUSION
+### **5.1 - Nos ressentis**
+Malgrès quelques difficultés, notre projet est opérationnel et contient plus de fonctionnalités qu'attendu. En effet, le projet portait simplement sur la création d'un honeypot; au final, nous avons fait un outil déployable et customisable qui peut s'adapter facilement dans une infrastructure d'entreprise par exemple.
+
+Nous avons eu l'occasion d'apprendre énormément dans beaucoup de domaines; LXC et son environnement, le développement réseau avec python et sa gestion des sockets, nous avons aussi beacoup appris sur l'environnement linux et évidemment la gestion d'un gros projet en équipe.
+
+Enfin, nous avons eu la chance d'analyser une réelle attaque, d'analyser les malwares et de mener notre propre enquête sur l'origine de l'attaque et ses objectifs.
+
+### **5.2 - Améliorations futures**
+Nous prévoyons de continuer à travailler sur le honeypot, notamment pour l'améliorer sur quelques points.
+
+* Une installation simplifié, éventuellement un script d'installation automatique. C'est un point qui, bien qu'indirect au projet, nous tient à coeur, notre projet final visant à être déployable dans une infrastructure, il est important pour nous de fournir une installation simple et automatique.
+
+* Instancier les honeypot pour pouvoir avoir en simultané plusieurs attaques. Actuellement, les connexions SSH sont limités à 1, donc potentiellement un attaquant pourrait être refusé car quelqu'un est déjà connecté.
