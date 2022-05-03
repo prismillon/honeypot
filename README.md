@@ -16,7 +16,12 @@ Sommaire général:
     * [3.3 Fonctions et données partagées](#shared-data)
     * [3.4 Examples](#exxx)
 * [4. Résultats](#resultats)
+    * [4.1 Présentation de notre implémenation.](#our-implem)
+    * [4.2 Résultats obtenus.](#result)
 * [5. Conclusion](#conclusion)
+    * [5.1 Nos ressentis.](#feelings)
+    * [5.2 Améliorations futures.](#forthefuture)
+
 
 <br/>
 <br/>
@@ -352,13 +357,13 @@ Grâce à cette possibilité de customisation, il est facile d'imaginer une int�
 <a id="resultats"></a>
 ## 4 - RESULTATS
 
-### **4.1 Présentation de notre implémenation.**
+### **4.1 Présentation de notre implémenation.** <a id="our-implem"></a>
 Pour démontrer la modularité et la capacité d'adaptation de notre honeypot, nous avons crée notre propre [implémentation](./demo/main.py). Ainsi, un bot twitter a été ajouté à la gestion du honeypot, avec un tweet à chaque fin d'attaque proposant un résumé de l'attaque ainsi qu'une description se modifiant automatiquement pour signaler si le honeypot est sous attaque ou non.
 
 ![Profile](./images/twitterprofil.png)
 ![Tweet](./images/twitterattack.png)
 
-### **4.2 Résultats obtenu**
+### **4.2 Résultats obtenu** <a id="result"></a>
 Durant une exposition sur internet d'environ une semaine sans interruption, plusieurs comportements on été detectés, le plus courant étant une simple connection ssh sans aucune commandes tapées, probablement des robots récoltant les IP de tout les serveurs aux crédentiels par défault sans faire de commandes dessus, durant la durée du test, une bonne 20aine de connections de ce genre on pu être observées. Un autre type d'attaque à aussi été présent couramment, étonnament ce n'était pas directement relié au honeypot, mais au serveur attendant les ping du honeypot. En effet, la requête suivante à été envoyée de nombreuses fois au serveur sur le port 13000:
 
 ```
@@ -413,14 +418,15 @@ Grâce à nos investigations, nous avons pu nous connecter à ce serveurs IRC, e
 
 <a id="conclusion"></a>
 ## 5. CONCLUSION
-### **5.1 - Nos ressentis**
+
+### **5.1 - Nos ressentis** <a id="feelings"></a>
 Malgrès quelques difficultés, notre projet est opérationnel et contient plus de fonctionnalités qu'attendu. En effet, le projet portait simplement sur la création d'un honeypot; au final, nous avons fait un outil déployable et customisable qui peut s'adapter facilement dans une infrastructure d'entreprise par exemple.
 
 Nous avons eu l'occasion d'apprendre énormément dans beaucoup de domaines; LXC et son environnement, le développement réseau avec python et sa gestion des sockets, nous avons aussi beacoup appris sur l'environnement linux et évidemment la gestion d'un gros projet en équipe.
 
 Enfin, nous avons eu la chance d'analyser une réelle attaque, d'analyser les malwares et de mener notre propre enquête sur l'origine de l'attaque et ses objectifs.
 
-### **5.2 - Améliorations futures**
+### **5.2 - Améliorations futures** <a id="forthefuture"></a>
 Nous prévoyons de continuer à travailler sur le honeypot, notamment pour l'améliorer sur quelques points.
 
 * Une installation simplifié, éventuellement un script d'installation automatique. C'est un point qui, bien qu'indirect au projet, nous tient à coeur, notre projet final visant à être déployable dans une infrastructure, il est important pour nous de fournir une installation simple et automatique.
