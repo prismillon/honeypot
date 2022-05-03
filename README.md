@@ -350,15 +350,15 @@ winniepot.run()
 Grâce à cette possibilité de customisation, il est facile d'imaginer une intégration en profondeur à une infrastructure existante, avec des alertes en fonction des besoins. On peut par exemple imaginer une gestion d'alertes via un compte automatisé twitter, discord, slack ou autres plateformes.
 
 <a id="resultats"></a>
-## **4 - RESULTATS**
+## 4 - RESULTATS
 
-### 4.1 Présentation de notre implémenation.
+### **4.1 Présentation de notre implémenation.**
 Pour démontrer la modularité et la capacité d'adaptation de notre honeypot, nous avons crée notre propre [implémentation](./demo/main.py). Ainsi, un bot twitter a été ajouté à la gestion du honeypot, avec un tweet à chaque fin d'attaque proposant un résumé de l'attaque ainsi qu'une description se modifiant automatiquement pour signaler si le honeypot est sous attaque ou non.
 
 ![Profile](./images/twitterprofil.png)
 ![Tweet](./images/twitterAttack.png)
 
-### 4.2 Résultats obtenu
+### **4.2 Résultats obtenu**
 Durant une exposition sur internet d'environ une semaine sans interruption, plusieurs comportements on été detectés, le plus courant étant une simple connection ssh sans aucune commandes tapées, probablement des robots récoltant les IP de tout les serveurs aux crédentiels par défault sans faire de commandes dessus, durant la durée du test, une bonne 20aine de connections de ce genre on pu être observées. Un autre type d'attaque à aussi été présent couramment, étonnament ce n'était pas directement relié au honeypot, mais au serveur attendant les ping du honeypot. En effet, la requête suivante à été envoyée de nombreuses fois au serveur sur le port 13000:
 
 ```
@@ -404,7 +404,7 @@ Budapest.HU.EU.UnderNet.org # biret
 Chicago.IL.US.Undernet.org # biret
 ```
 
-Grâce à nos investigations, nous avons pu nous connecter à ces serveurs IRC, et en effet, des bots sont bien présents !
+Grâce à nos investigations, nous avons pu nous connecter à ces serveurs IRC, et en effet, on remarque que des bots sont bien présents !
 
 ![](./images/IRCbot.png)
 
@@ -412,4 +412,4 @@ Grâce à nos investigations, nous avons pu nous connecter à ces serveurs IRC, 
 
 
 <a id="conclusion"></a>
-  ## **5. Conclusion**
+## 5. CONCLUSION
